@@ -3,7 +3,7 @@
 '''
 Date: 2022-10-18 19:15:15
 LastEditors: gakkispy && yaosenjun@cii.com
-LastEditTime: 2022-10-18 20:52:18
+LastEditTime: 2022-10-25 11:45:00
 FilePath: /overlap_project/src/PeakDetect/GaussianPeakFIt.py
 '''
 from lmfit.models import GaussianModel, LinearModel, ExponentialModel
@@ -12,24 +12,24 @@ import numpy as np
 
 # gaussian model with exponential background
 def gaussian_with_exp(data, peaks, valleys):
+    params_dict = dict()
     exp_mod = ExponentialModel(prefix='exp_')
     pars = exp_mod.guess(data['y'], x=data['x'])
-    gauss_main = GaussianModel(prefix='gauss_main_')
-    pars.update(gauss_main.make_params())
-    if len(peaks) > 1:
-        gauss_side = GaussianModel(prefix='gauss_side_')
-        pars.update(gauss_side.make_params())
-        pars['gauss_side_center'].set(data['x'][peaks[1]], min=data['x'][peaks[1]]-50, max=data['x'][peaks[1]]+50)
-        pars['gauss_side_sigma'].set(5, min=0.1, max=50)
-        pars['gauss_side_amplitude'].set(10, min=0, max=150)
-        mod = exp_mod + gauss_main + gauss_side
+    max_peak = data['y'][peaks].max()
+    if peaks:
+        for index, peak in enumerate(peaks):
+            tmp_prefix = 'pcm' + str(index) + '_'
+            params_dict[tmp_prefix] = GaussianModel(prefix=tmp_prefix)
+            pars.update(params_dict[tmp_prefix].make_params())
+            pars[tmp_prefix + 'center'].set(data['x'][peak], min=data['x'][peak]-50, max=data['x'][peak]+50)
+            pars[tmp_prefix + 'amplitude'].set(5, min=0.1, max=max_peak, min=0.1)
+            pars[tmp_prefix + 'sigma'].set(10, min=.1, max = 50)
+            mod += params_dict[tmp_prefix]
         out = mod.fit(data['y'], pars, x=data['x'])
         comps = out.eval_components(x=data['x'])
+        return out, comps
     else:
-        mod = exp_mod + gauss_main
-        out = mod.fit(data['y'], pars, x=data['x'])
-        comps = out.eval_components(x=data['x'])
-    return out, comps
+        return 0,0
 
 
 # gaussian model
