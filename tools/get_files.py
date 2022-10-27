@@ -3,7 +3,7 @@
 '''
 Date: 2022-09-29 08:53:56
 LastEditors: gakkispy && yaosenjun@cii.com
-LastEditTime: 2022-10-20 10:54:28
+LastEditTime: 2022-10-25 19:10:00
 FilePath: /overlap_project/tools/get_files.py
 '''
 import os
@@ -13,7 +13,7 @@ from tqdm import tqdm
 class GetFiles(object):
     def __init__(self, dir, type):
         super(GetFiles, self).__init__
-        self.type = type or '.mzxml'
+        self.type = type or 'mzxml'
         self.root = os.path.dirname(os.path.abspath(__file__))
         self.dir = dir or os.path.join(self.root, 'data/')
         self.files = []
